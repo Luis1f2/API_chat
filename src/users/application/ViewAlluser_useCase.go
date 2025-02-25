@@ -1,18 +1,24 @@
 package application
 
 import (
-	"chat/src/users/domain/entities"
 	"chat/src/users/domain"
+	"chat/src/users/domain/entities"
+	"errors"
 )
 
 type ViewUsers struct {
-	db domain.IUser
+	repo domain.IUser
 }
 
-func NewViewUsers(db domain.IUser) *ViewUsers {
-	return &ViewUsers{db: db}
+func NewViewUsers(repo domain.IUser) *ViewUsers {
+	return &ViewUsers{repo: repo}
 }
 
 func (vu *ViewUsers) Execute() ([]entities.User, error) {
-	return vu.db.ViewAll()
+	users, err := vu.repo.ViewAll()
+	if err != nil {
+		return nil, errors.New("error al obtener la lista de usuarios: " + err.Error())
+	}
+
+	return users, nil
 }

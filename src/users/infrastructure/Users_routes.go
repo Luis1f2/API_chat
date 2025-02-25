@@ -1,7 +1,9 @@
 package infrastructure
 
 import (
-	"chat/src/users/infrastructure/controllers"
+	"log"
+
+	"chat/src/Users/infrastructure/controllers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,16 +11,18 @@ import (
 // SetupUserRoutes configura las rutas para la entidad "Users"
 func SetupUserRoutes(
 	router *gin.Engine,
-	addUserController *controllers.AddUserController,
-	deleteUserController *controllers.RemoveUserController,
+	saveUserController *controllers.SaveUserController,
+	deleteUserController *controllers.DeleteUserController,
 	viewUsersController *controllers.ViewAllUsersController,
-	viewUserController *controllers.ViewOneUserController,
+	viewOneUserController *controllers.ViewOneUserController,
 ) {
 	userGroup := router.Group("/users")
 	{
-		userGroup.POST("", addUserController.Run)
-		userGroup.GET("", viewUsersController.Run)
-		userGroup.GET("/:id", viewUserController.Run)
-		userGroup.DELETE("/:id", deleteUserController.Run)
+		userGroup.POST("", saveUserController.Run)         // Crear usuario
+		userGroup.GET("", viewUsersController.Run)         // Obtener todos los usuarios
+		userGroup.GET("/:id", viewOneUserController.Run)   // Obtener un usuario por ID
+		userGroup.DELETE("/:id", deleteUserController.Run) // Eliminar usuario por ID
 	}
+
+	log.Println("Rutas de usuario configuradas")
 }

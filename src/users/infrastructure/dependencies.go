@@ -1,22 +1,27 @@
 package infrastructure
 
 import (
+	"log"
+
+	"chat/src/core"
 	"chat/src/users/application"
 	"chat/src/users/infrastructure/controllers"
 
 	"github.com/gin-gonic/gin"
 )
 
-func InitUsers(db *MySQL, router *gin.Engine) {
-	println("CARGANDO DEPENDENCIAS DE USUARIOS")
+func InitUsers(db *core.ConnMySQL, router *gin.Engine) {
+	log.Println("CARGANDO DEPENDENCIAS DE USUARIOS")
 
-	userSaver := application.NewSaveUser(db)
-	userRemover := application.NewDeleteUser(db)
-	userViewer := application.NewViewUsers(db)
-	userView := application.NewViewUser(db)
+	userRepo := NewUserRepository(db)
+
+	userSaver := application.NewSaveUser(userRepo)
+	userRemover := application.NewDeleteUser(userRepo)
+	userViewer := application.NewViewUsers(userRepo)
+	userView := application.NewViewUser(userRepo)
 
 	addUserController := controllers.NewSaveUserController(userSaver)
-	deleteUserController := controllers.NewRemoveUserController(userRemover)
+	deleteUserController := controllers.NewDeleteUserController(userRemover)
 	viewUsersController := controllers.NewViewAllUsersController(userViewer)
 	viewUserController := controllers.NewViewOneUserController(userView)
 

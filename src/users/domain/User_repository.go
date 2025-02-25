@@ -1,10 +1,11 @@
 package domain
 
-import "chat/src/Users/domain/entities"
+import "chat/src/users/domain/entities"
 
 type IUser interface {
-	Save(username, password string) error
+	Save(user *entities.User) error
 	ViewOne(id int) (*entities.User, error)
 	ViewAll() ([]entities.User, error)
 	Delete(id int) error
+	Exists(username string) (bool, error)
 }

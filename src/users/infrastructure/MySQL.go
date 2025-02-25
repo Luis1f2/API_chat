@@ -1,64 +1,59 @@
 package infrastructure
 
 import (
-	"chat/src/Users/domain/entities"
 	"chat/src/core"
+	"chat/src/users/domain"
+	"chat/src/users/domain/entities"
+	"database/sql"
+	"errors"
 	"fmt"
-	"log"
 )
 
-type MySQL struct {
-	conn *core.Conn_MySQL
+type UserRepository struct {
+	conn *core.ConnMySQL
 }
 
-// NewMySQL inicializa una nueva conexión MySQL.
-func NewMySQL() *MySQL {
-	conn := core.GetDBPool()
-	if conn.Err != "" {
-		log.Fatalf("error al configurar el pool de conexiones: %v", conn.Err)
-	}
-	return &MySQL{conn: conn}
+var _ domain.IUser = &UserRepository{}
+
+func NewUserRepository(db *core.ConnMySQL) domain.IUser {
+	return &UserRepository{conn: db}
 }
 
-// Save agrega un nuevo usuario a la base de datos.
-func (mysql *MySQL) Save(username, password string) error {
-	query := "INSERT INTO users (username, password) VALUES (?, ?)"
+func (repo *UserRepository) Exists(username string) (bool, error) {
+	query := "SELECT COUNT(*) FROM users WHERE username = ?"
 
-	result, err := mysql.conn.ExecutePreparedQuery(query, username, password)
+	var count int
+	err := repo.conn.FetchRow(query, username).Scan(&count)
 	if err != nil {
-		return fmt.Errorf("error al ejecutar la consulta: %w", err)
+		if err == sql.ErrNoRows {
+			return false, nil // No hay error, pero el usuario no existe
+		}
+		return false, fmt.Errorf("error al verificar si el usuario existe: %w", err)
 	}
 
-	rowsAffected, _ := result.RowsAffected()
-	if rowsAffected == 1 {
-		log.Printf("[MySQL] - Filas afectadas: %d", rowsAffected)
-	}
-	return nil
+	return count > 0, nil
 }
 
-// Delete elimina un usuario de la base de datos por su ID.
-func (mysql *MySQL) Delete(id int) error {
+func (repo *UserRepository) Delete(id int) error {
 	query := "DELETE FROM users WHERE id = ?"
-
-	result, err := mysql.conn.ExecutePreparedQuery(query, id)
+	result, err := repo.conn.ExecutePreparedQuery(query, id)
 	if err != nil {
-		return fmt.Errorf("error al ejecutar la consulta: %w", err)
+		return fmt.Errorf("error al eliminar el usuario: %w", err)
 	}
-	rowsAffected, _ := result.RowsAffected()
-	if rowsAffected == 1 {
-		log.Printf("[MySQL] - Filas afectadas: %d", rowsAffected)
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error al obtener las filas afectadas: %w", err)
+	}
+	if rowsAffected == 0 {
+		return errors.New("usuario no encontrado")
 	}
 	return nil
 }
-
-// ViewAll obtiene todos los usuarios de la base de datos.
-func (mysql *MySQL) ViewAll() ([]entities.User, error) {
+func (repo *UserRepository) ViewAll() ([]entities.User, error) {
 	query := "SELECT id, username, password FROM users"
-
-	// Corregido: Ahora capturamos el error de FetchRows
-	rows, err := mysql.conn.FetchRows(query)
+	rows, err := repo.conn.FetchRows(query)
 	if err != nil {
-		return nil, fmt.Errorf("error al ejecutar la consulta SELECT: %w", err)
+		return nil, fmt.Errorf("error al obtener usuarios: %w", err)
 	}
 	defer rows.Close()
 
@@ -66,42 +61,47 @@ func (mysql *MySQL) ViewAll() ([]entities.User, error) {
 	for rows.Next() {
 		var user entities.User
 		if err := rows.Scan(&user.ID, &user.Username, &user.Password); err != nil {
-			return nil, fmt.Errorf("error al escanear la fila: %w", err)
+			return nil, fmt.Errorf("error al escanear el usuario: %w", err)
 		}
 		users = append(users, user)
 	}
 
-	// Validar errores después de iterar sobre las filas
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterando sobre las filas: %w", err)
+		return nil, fmt.Errorf("error iterando sobre los usuarios: %w", err)
 	}
+
 	return users, nil
 }
 
-// ViewOne obtiene un usuario específico por su ID.
-func (mysql *MySQL) ViewOne(id int) (*entities.User, error) {
+func (repo *UserRepository) ViewOne(id int) (*entities.User, error) {
 	query := "SELECT id, username, password FROM users WHERE id = ?"
-
-	// Corregido: Capturar error de FetchRows
-	rows, err := mysql.conn.FetchRows(query, id)
-	if err != nil {
-		return nil, fmt.Errorf("error al ejecutar la consulta SELECT: %w", err)
-	}
-	defer rows.Close()
+	row := repo.conn.FetchRow(query, id)
 
 	var user entities.User
-	if rows.Next() {
-		if err := rows.Scan(&user.ID, &user.Username, &user.Password); err != nil {
-			return nil, fmt.Errorf("error al escanear la fila: %w", err)
+	err := row.Scan(&user.ID, &user.Username, &user.Password)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("usuario no encontrado")
 		}
-	} else {
-		return nil, fmt.Errorf("no se encontró ningún usuario con el ID %d", id)
-	}
-
-	// Validar errores después de iterar sobre las filas
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterando sobre las filas: %w", err)
+		return nil, fmt.Errorf("error al obtener el usuario: %w", err)
 	}
 
 	return &user, nil
+}
+
+func (repo *UserRepository) Save(user *entities.User) error {
+	query := "INSERT INTO users (username, password) VALUES (?, ?)"
+	result, err := repo.conn.ExecutePreparedQuery(query, user.Username, user.Password)
+	if err != nil {
+		return fmt.Errorf("error al guardar el usuario: %w", err)
+	}
+
+	// Opcional: obtener el ID generado automáticamente y asignarlo al usuario
+	id, err := result.LastInsertId()
+	if err != nil {
+		return fmt.Errorf("error al obtener el ID insertado: %w", err)
+	}
+	user.ID = int(id)
+
+	return nil
 }
