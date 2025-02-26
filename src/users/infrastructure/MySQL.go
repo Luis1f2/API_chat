@@ -1,9 +1,9 @@
 package infrastructure
 
 import (
+	"chat/src/Users/domain"
+	"chat/src/Users/domain/entities"
 	"chat/src/core"
-	"chat/src/users/domain"
-	"chat/src/users/domain/entities"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -50,7 +50,7 @@ func (repo *UserRepository) Delete(id int) error {
 	return nil
 }
 func (repo *UserRepository) ViewAll() ([]entities.User, error) {
-	query := "SELECT id, username, password FROM users"
+	query := "SELECT id, username, password_hash AS password FROM users"
 	rows, err := repo.conn.FetchRows(query)
 	if err != nil {
 		return nil, fmt.Errorf("error al obtener usuarios: %w", err)

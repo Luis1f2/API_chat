@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"chat/src/users/application"
+	"chat/src/Users/application"
 
 	"github.com/gin-gonic/gin"
 )

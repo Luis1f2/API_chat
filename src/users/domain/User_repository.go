@@ -1,6 +1,6 @@
 package domain
 
-import "chat/src/users/domain/entities"
+import "chat/src/Users/domain/entities"
 
 type IUser interface {
 	Save(user *entities.User) error

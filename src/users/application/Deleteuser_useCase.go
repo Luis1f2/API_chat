@@ -1,7 +1,7 @@
 package application
 
 import (
-	"chat/src/users/domain"
+	"chat/src/Users/domain"
 	"errors"
 )
 

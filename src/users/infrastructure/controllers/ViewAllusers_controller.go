@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"chat/src/users/application"
+	"chat/src/Users/application"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,13 +22,11 @@ func (vc *ViewAllUsersController) Run(c *gin.Context) {
 		return
 	}
 
-	// Si no hay usuarios, devolver 204 No Content
 	if len(users) == 0 {
-		c.JSON(http.StatusNoContent, gin.H{"message": "No hay usuarios registrados"})
+		c.JSON(http.StatusOK, gin.H{"message": "No hay usuarios registrados"})
 		return
 	}
 
-	// Asegurar que no se devuelvan contraseñas
 	response := make([]gin.H, len(users))
 	for i, user := range users {
 		response[i] = gin.H{

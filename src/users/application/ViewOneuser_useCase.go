@@ -1,8 +1,8 @@
 package application
 
 import (
-	"chat/src/users/domain"
-	"chat/src/users/domain/entities"
+	"chat/src/Users/domain"
+	"chat/src/Users/domain/entities"
 	"errors"
 )
 

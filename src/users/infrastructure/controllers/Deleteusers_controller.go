@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"chat/src/users/application"
+	"chat/src/Users/application"
 	"net/http"
 	"strconv"
 	"strings"

@@ -23,16 +23,19 @@ func GetDBPool() (*ConnMySQL, error) {
 		log.Println("Advertencia: No se pudo cargar el archivo .env, usando variables de entorno del sistema.")
 	}
 
-	dbHost := os.Getenv("DB_HOST")
-	dbUser := os.Getenv("DB_USER")
-	dbPass := os.Getenv("DB_PASS")
-	dbSchema := os.Getenv("DB_SCHEMA")
+	dbHost := os.Getenv("DB_HOST")     // localhost
+	dbPort := os.Getenv("DB_PORT")     // 3306
+	dbUser := os.Getenv("DB_USER")     // root
+	dbPass := os.Getenv("DB_PASS")     // (vacío, si es el caso)
+	dbSchema := os.Getenv("DB_SCHEMA") // nombre de la base de datos
 
-	if dbHost == "" || dbUser == "" || dbPass == "" || dbSchema == "" {
-		return nil, fmt.Errorf("faltan variables de entorno: DB_HOST, DB_USER, DB_PASS, DB_SCHEMA")
+	// Verificar que se hayan definido las variables necesarias
+	if dbHost == "" || dbPort == "" || dbUser == "" || dbSchema == "" {
+		return nil, fmt.Errorf("faltan variables de entorno: DB_HOST, DB_PORT, DB_USER y/o DB_SCHEMA")
 	}
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?parseTime=true", dbUser, dbPass, dbHost, dbSchema)
+	// Construir el DSN usando el puerto desde la variable de entorno
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPass, dbHost, dbPort, dbSchema)
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {

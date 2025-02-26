@@ -3,9 +3,9 @@ package infrastructure
 import (
 	"log"
 
+	"chat/src/Users/infrastructure/controllers"
 	"chat/src/core"
-	"chat/src/users/application"
-	"chat/src/users/infrastructure/controllers"
+	"chat/src/Users/application"
 
 	"github.com/gin-gonic/gin"
 )
