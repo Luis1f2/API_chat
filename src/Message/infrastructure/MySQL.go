@@ -71,3 +71,24 @@ func (repo *MessageRepository) UpdateStatus(id int, status string) error {
 	_, err := repo.conn.ExecutePreparedQuery(query, status, id)
 	return err
 }
+
+func (repo *MessageRepository) ViewByUser(userID int) ([]entities.Message, error) {
+	query := "SELECT id, sender_id, receiver_id, content, timestamp, status FROM messages WHERE receiver_id = ?"
+	rows, err := repo.conn.FetchRows(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var messages []entities.Message
+	for rows.Next() {
+		var message entities.Message
+		err := rows.Scan(&message.ID, &message.SenderID, &message.ReceiverID, &message.Content, &message.Timestamp, &message.Status)
+		if err != nil {
+			return nil, err
+		}
+		messages = append(messages, message)
+	}
+
+	return messages, nil
+}

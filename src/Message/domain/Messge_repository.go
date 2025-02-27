@@ -6,6 +6,7 @@ type IMessage interface {
 	Save(message *entities.Message) error
 	ViewOne(id int) (*entities.Message, error)
 	ViewAll() ([]entities.Message, error)
+	ViewByUser(userID int) ([]entities.Message, error)
 	Delete(id int) error
 	UpdateStatus(id int, status string) error
 }
