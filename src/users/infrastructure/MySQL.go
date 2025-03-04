@@ -50,6 +50,23 @@ func (repo *UserRepository) Delete(id int) error {
 	return nil
 }
 
+func (repo *UserRepository) Authenticate(username, password string) (*entities.User, error) {
+	query := "SELECT id, username, password FROM users WHERE username = ?"
+	row := repo.conn.FetchRow(query, username)
+
+	var user entities.User
+	err := row.Scan(&user.ID, &user.Username, &user.Password)
+	if err != nil {
+		return nil, errors.New("usuario no encontrado")
+	}
+
+	if !user.CheckPassword(password) {
+		return nil, errors.New("contraseña incorrecta")
+	}
+
+	return &user, nil
+}
+
 func (repo *UserRepository) ViewAll() ([]entities.User, error) {
 	query := "SELECT id, username, password FROM users"
 	rows, err := repo.conn.FetchRows(query)

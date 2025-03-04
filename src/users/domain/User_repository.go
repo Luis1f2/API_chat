@@ -8,4 +8,5 @@ type IUser interface {
 	ViewAll() ([]entities.User, error)
 	Delete(id int) error
 	Exists(username string) (bool, error)
+	Authenticate(username, password string) (*entities.User, error)
 }
