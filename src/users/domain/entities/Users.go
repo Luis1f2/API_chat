@@ -7,7 +7,7 @@ import (
 type User struct {
 	ID       int    `json:"id"`
 	Username string `json:"username"`
-	Password string `json:"password,omitempty"` // Omitimos en JSON para seguridad
+	Password string `json:"password,omitempty"`
 }
 
 // NewUser crea una nueva instancia de User con la contraseña encriptada

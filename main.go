@@ -1,9 +1,11 @@
 package main
 
 import (
-	"chat/src/core"
-	"chat/src/users/infrastructure"
 	"log"
+
+	messageInfra "chat/src/Message/infrastructure"
+	userInfra "chat/src/Users/infrastructure"
+	"chat/src/core"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,13 +16,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error al conectar a la base de datos: %v", err)
 	}
-	defer db.Close()
+	defer db.Close() // Defer justo después de abrir el recurso
 
 	// Crear el router de Gin
 	router := gin.Default()
 
-	// Inicializar las dependencias del módulo de usuarios
-	infrastructure.InitUsers(db, router)
+	userInfra.InitUsers(db, router)
+
+	messageInfra.InitMessages(db, router)
 
 	// Iniciar el servidor en el puerto 8080
 	if err := router.Run(":8080"); err != nil {

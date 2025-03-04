@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// SetupUserRoutes configura las rutas para la entidad "Users"
 func SetupUserRoutes(
 	router *gin.Engine,
 	saveUserController *controllers.SaveUserController,

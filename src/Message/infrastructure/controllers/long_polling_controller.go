@@ -41,8 +41,8 @@ func (lpc *LongPollingController) Run(c *gin.Context) {
 	select {
 	case messages := <-messageChan:
 		c.JSON(http.StatusOK, gin.H{"messages": messages})
-	case <-time.After(30 * time.Second): // Timeout de 30 segundos
-		c.JSON(http.StatusNoContent, gin.H{"message": "No hay mensajes nuevos"})
+	case <-time.After(30 * time.Second):
+		c.JSON(http.StatusOK, gin.H{"message": "No hay mensajes nuevos"})
 	}
 }
 

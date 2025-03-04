@@ -26,7 +26,7 @@ func (repo *UserRepository) Exists(username string) (bool, error) {
 	err := repo.conn.FetchRow(query, username).Scan(&count)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return false, nil // No hay error, pero el usuario no existe
+			return false, nil
 		}
 		return false, fmt.Errorf("error al verificar si el usuario existe: %w", err)
 	}
@@ -49,8 +49,9 @@ func (repo *UserRepository) Delete(id int) error {
 	}
 	return nil
 }
+
 func (repo *UserRepository) ViewAll() ([]entities.User, error) {
-	query := "SELECT id, username, password_hash AS password FROM users"
+	query := "SELECT id, username, password FROM users"
 	rows, err := repo.conn.FetchRows(query)
 	if err != nil {
 		return nil, fmt.Errorf("error al obtener usuarios: %w", err)
@@ -96,7 +97,6 @@ func (repo *UserRepository) Save(user *entities.User) error {
 		return fmt.Errorf("error al guardar el usuario: %w", err)
 	}
 
-	// Opcional: obtener el ID generado automáticamente y asignarlo al usuario
 	id, err := result.LastInsertId()
 	if err != nil {
 		return fmt.Errorf("error al obtener el ID insertado: %w", err)
